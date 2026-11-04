@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "modules": [
+    {
+      "id": "ethnicity",
+      "title": "Ethnicity",
+      "status": "planned"
+    },
+    {
+      "id": "languages",
+      "title": "Languages",
+      "status": "active",
+      "metadata": "atlases/languages/site/provenance/indicators.json",
+      "web_config": "atlases/languages/web/netlify.toml",
+      "publication_directory": "atlases/languages/site"
+    },
+    {
+      "id": "gender",
+      "title": "Gender",
+      "status": "planned"
+    },
+    {
+      "id": "employment",
+      "title": "Employment and economic activity",
+      "status": "planned"
+    },
+    {
+      "id": "education",
+      "title": "Education",
+      "status": "planned"
+    },
+    {
+      "id": "water_sanitation",
+      "title": "Water and sanitation",
+      "status": "planned"
+    },
+    {
+      "id": "electricity",
+      "title": "Electricity",
+      "status": "planned"
+    },
+    {
+      "id": "housing",
+      "title": "Housing characteristics",
+      "status": "planned"
+    },
+    {
+      "id": "migration",
+      "title": "Migration",
+      "status": "planned"
+    },
+    {
+      "id": "population",
+      "title": "Population and demographic structure",
+      "status": "planned"
+    },
+    {
+      "id": "additional_topics",
+      "title": "Additional topics",
+      "status": "planned"
+    }
+  ],
+  "portal": {
+    "status": "future_deliverable",
+    "implementation_created": false
+  }
+}

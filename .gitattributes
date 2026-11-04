@@ -1,0 +1,4 @@
+# Preserve publication bytes, including approved maps and embedded checksums.
+* -text
+*.png binary
+*.zip binary

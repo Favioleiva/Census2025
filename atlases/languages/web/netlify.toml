@@ -1,0 +1,3 @@
+[build]
+  publish = "atlases/languages/site"
+# Repository-root context; no build command.

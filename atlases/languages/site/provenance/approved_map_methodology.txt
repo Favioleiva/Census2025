@@ -1,0 +1,19 @@
+Atlas lingüístico del Perú — Censo 2025. Mapas aprobados; conciliación territorial pendiente.
+
+Datos: conteos de categoría 1 de las 54 variables S5_P16_1..S5_P16_54. Porcentaje = 100 * conteo / población distrital de 3 años a más, obtenida de las edades y conciliada contra los 54 universos originales. No se usa PopTotal ni PopCTotal del GeoPackage como denominador. No se normalizan porcentajes.
+
+Sangani (120307) se suma a Perené (120302): conteos y denominadores aditivos; porcentajes recalculados. Original de 1893 distritos preservado. Totales nacionales invariantes.
+
+Unión por códigos mediante crosswalk explícito: 1892 unidades en ambas fuentes, relación uno a uno, sin descartes. Códigos censales conservados como texto. Para la clave geográfica derivada, ceros a seis posiciones y prefijos 26/27 de Lima -> 15, contrastados con departamento, provincia y distrito. Variantes Anco_Huallo/ANCO-HUALLO y Raymondi/RAIMONDI documentadas.
+
+Geometría: Censo2025popFinalFixed.gpkg, 1892 MultiPolygon válidos. Proyección original cilíndrica equivalente, WGS84, paralelo estándar -9,5 grados, meridiano central -75 grados, metros. Sin reparación, simplificación, recorte ni cambio de límites. Extensión nacional idéntica en todas las figuras.
+
+Absolutos: cero separado; positivos en 1-9, 10-99, 100-999, 1000-9999, 10000-99999, >=100000. Relativos: cero separado; (0,1], (1,5], (5,10], (10,25], (25,50], (50,75], (75,100] por ciento. Clases fijas para comparar categorías, sin cuantiles ni redondeo de valores al clasificar. Cero en gris claro #F5F5F5. Positivos en magma invertida, muestras equidistantes desde 0.90 hasta 0.14: crema, naranja, magenta y púrpura oscuro. Luminosidad CIELAB L* estrictamente decreciente, según el diseño cartográfico aprobado. Se evita el extremo casi negro y se oscurece el primer positivo para distinguirlo del cero. Sin dato en gris medio y trama; hay cero faltantes. La leyenda conserva clases vacías y muestra sus frecuencias. No se realizó simulación adicional de deficiencias de visión del color. Selección basada en el diseño perceptual documentado de magma. Referencias: https://matplotlib.org/stable/users/explain/colors/colormaps.html y https://bids.github.io/colormap/ .
+
+Hay 182 diferencias entre población de todas las edades de la tabla censal y PopCTotal del GeoPackage; su suma algebraica es cero después de reagrupar Sangani. La coincidencia nacional no resuelve las diferencias distritales. No se infiere automáticamente que cada discrepancia implica cambio de límites. Se mantienen todos los valores censales, se marca la condición provisional en cada mapa. Equivalencia territorial pendiente de investigación antes de declarar el atlas final.
+
+Mapas PNG de 3510 × 2490 píxeles a 300 ppp. El sitio conserva los 108 mapas aprobados sin modificar sus bytes. Las geometrías necesarias para su visualización están incorporadas en los PNG; no se requiere un GeoPackage para desplegar el atlas.
+
+Fuente estadística: INEI, Censos Nacionales 2025, https://redatamcpv2025.inei.gob.pe/. El diccionario oficial original no estaba disponible: las etiquetas se conservan de las consultas TXT y encabezados Excel, sin inferir nombres. La suma de categorías no representa personas únicas. No se imputa cero a valores faltantes. Las columnas de edad 122 y 123 no estaban en la tabulación suministrada y no se imputaron.
+
+La descarga pública contiene únicamente indicadores finales, ranking nacional, diccionario y correspondencia distrital. Los originales REDATAM y los informes internos se conservan en el archivo local de investigación. La reconstrucción de mapas desde geometrías y fuentes originales requiere ese archivo separado. No se presupone comparabilidad con censos anteriores ni una licencia de redistribución para fuentes externas.
