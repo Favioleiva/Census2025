@@ -1,7 +1,7 @@
 {
   "author": "Favio Leiva",
   "edition": "Exploratory / Exploratoria",
-  "slides": 139,
+  "slides": 141,
   "languages": [
     "es",
     "en"
@@ -41,8 +41,8 @@
     },
     {
       "path": "deck-data.js",
-      "bytes": 1617770,
-      "sha256": "521d4c14047b0b8117fcabf7e9d9d7c585c1e186aa90e86bab46c361279601b7"
+      "bytes": 1643542,
+      "sha256": "9a6ddbadd6de1dac2984e8d60f5128566179ed99920a6cb4922217acadca7707"
     },
     {
       "path": "deck.css",
@@ -51,8 +51,8 @@
     },
     {
       "path": "deck.js",
-      "bytes": 46962,
-      "sha256": "d793ed55fb8d25337177199393b3bd803093fa29e8304815159caff6b86877e5"
+      "bytes": 47581,
+      "sha256": "804ae6c4e7166fa10d8f3a3e423ffda992514701d8fe24e0a576c30934277126"
     },
     {
       "path": "downloads/atlas_etnico_datos.xlsx",
@@ -78,5 +78,18 @@
     "width_px": 0.75,
     "method": "Exterior rings of the union of supplied district polygons; internal district boundaries excluded. Same contour clipped to Lima-Callao.",
     "district_stroke_width": 0
+  },
+  "bottom_rankings": {
+    "slides": [
+      "diversity-bottom",
+      "ethnic-presence-bottom"
+    ],
+    "size": 20,
+    "order": "ascending before rounding",
+    "diversity_order": "exact rational 1-HHI",
+    "valid_zeros_included": true,
+    "missing_values_excluded": true,
+    "tie_break": "source district code ascending",
+    "map_classes_unchanged": true
   }
 }

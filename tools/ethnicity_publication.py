@@ -1,5 +1,6 @@
 """Verify the minimal ethnicity runtime using only the Python standard library."""
 import hashlib,json,zipfile
+from fractions import Fraction
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -26,17 +27,31 @@ def verify():
         p=site/item['path'];assert p.stat().st_size==item['bytes']
         assert hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256'],item['path']
     data=assignment(site/'deck-data.js','window.ATLAS=')
-    slides=data['slides'];assert len(slides)==139 and len({s['id'] for s in slides})==139
+    slides=data['slides'];assert len(slides)==141 and len({s['id'] for s in slides})==141
     assert len(data['categories'])==64 and len(data['geometry_codes'])==1892
     assert sum(s['kind']=='map' for s in slides)==128
     assert sum(s['kind']=='maxima' for s in slides)==2
-    assert sum(s['kind']=='presence' for s in slides)==1
+    assert sum(s['kind']=='presence' for s in slides)==2
+    assert sum(s['kind']=='diversity' for s in slides)==2
     observations=assignment(site/'assets/district_values.js','window.ATLAS_DISTRICTS=')
     expected=[sum(observations['counts'][f'ETH_{j:02}'][i]>0 for j in range(1,64)) for i in range(1892)]
     assert observations['positive_identity_categories']==expected
     presence=next(s for s in slides if s['kind']=='presence')
     assert presence['included_categories']==63 and presence['observed_max']==max(expected)
     assert all(r['positive_identity_categories']==expected[observations['codes'].index(r['geometry_code'])] for r in presence['table'])
+    scores=[]
+    for i in range(1892):
+        counts=[observations['counts'][f'ETH_{j:02}'][i] for j in range(1,64)];n=sum(counts)
+        scores.append(Fraction(n*n-sum(v*v for v in counts),n*n) if n else None)
+    for bottom_id,parent_id,values,field in [('diversity-bottom','diversity-map',scores,'diversity_1_minus_hhi'),('ethnic-presence-bottom','ethnic-presence',expected,'positive_identity_categories')]:
+        bottom=next(s for s in slides if s['id']==bottom_id);parent=next(s for s in slides if s['id']==parent_id)
+        assert slides.index(bottom)==slides.index(parent)+1
+        assert bottom['classes']==parent['classes'] and bottom['district_bins']==parent['district_bins']
+        assert bottom['ranking_order']=='ascending' and bottom['ranking_includes_zero']
+        assert len(bottom['table'])==len({r['geometry_code'] for r in bottom['table']})==20
+        selected=[values[observations['codes'].index(r['geometry_code'])] for r in bottom['table']]
+        assert selected==sorted(v for v in values if v is not None)[:20]
+        assert all(abs(r[field]-float(v))<1e-14 for r,v in zip(bottom['table'],selected))
     outline=assignment(site/'assets/country_outline.js','window.ATLAS_OUTLINE=')
     assert set(outline)=={'national','inset'} and all(outline.values())
     assert 'assets/country_outline.js' in (site/'index.html').read_text(encoding='utf-8')
@@ -51,6 +66,6 @@ def verify():
         assert [a.attrib['name'] for a in sheets]==['Datos_Data','Diccionario_Dictionary']
         sheet=ET.fromstring(z.read('xl/worksheets/sheet1.xml'))
         assert len(sheet.find('s:sheetData',ns))==1893
-    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=139,categories=64,mapped_units=1892,workbook_sheets=2,presence_values_verified=True,country_outline=True)
+    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=141,categories=64,mapped_units=1892,workbook_sheets=2,presence_values_verified=True,bottom_rankings_verified=True,country_outline=True)
 
 if __name__=='__main__':print(json.dumps(verify(),indent=2))
