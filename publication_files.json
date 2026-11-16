@@ -5,6 +5,18 @@
     ".gitattributes",
     ".gitignore",
     "README.md",
+    "atlases/ethnicity/README.md",
+    "atlases/ethnicity/site/_headers",
+    "atlases/ethnicity/site/assets/district_geometry.js",
+    "atlases/ethnicity/site/assets/district_values.js",
+    "atlases/ethnicity/site/deck-data.js",
+    "atlases/ethnicity/site/deck.css",
+    "atlases/ethnicity/site/deck.js",
+    "atlases/ethnicity/site/downloads/atlas_etnico_datos.xlsx",
+    "atlases/ethnicity/site/index.html",
+    "atlases/ethnicity/site/netlify.toml",
+    "atlases/ethnicity/site/provenance/publication.json",
+    "atlases/ethnicity/web/netlify.toml",
     "atlases/languages/README.md",
     "atlases/languages/site/_headers",
     "atlases/languages/site/assets/maps/S5_P16_01_quechua_absolute.png",
@@ -130,6 +142,7 @@
     "atlases/registry.json",
     "docs/deployment/publication.md",
     "publication_files.json",
+    "tools/ethnicity_publication.py",
     "tools/publication.py"
   ]
 }

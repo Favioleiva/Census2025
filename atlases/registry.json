@@ -4,7 +4,10 @@
     {
       "id": "ethnicity",
       "title": "Ethnicity",
-      "status": "planned"
+      "status": "active",
+      "metadata": "atlases/ethnicity/site/provenance/publication.json",
+      "web_config": "atlases/ethnicity/web/netlify.toml",
+      "publication_directory": "atlases/ethnicity/site"
     },
     {
       "id": "languages",

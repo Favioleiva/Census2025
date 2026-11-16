@@ -117,17 +117,18 @@ def verify():
         for n in range(1, 55):
             variable = f'S5_P16_{n}'
             require(sum(int(r[variable]) for r in tables[1892]) == sum(int(r[variable]) for r in tables[1893]), f'National total differs: {variable}')
-    return {'status': 'PASS', 'candidate_files': len(names), 'candidate_bytes': sum((ROOT / n).stat().st_size for n in names), 'site_files': len(site_names), 'slides': 118, 'maps': 108, 'categories': 54, 'archive_members': len(DATA_MEMBERS)}
+    from ethnicity_publication import verify as verify_ethnicity
+    return {'status': 'PASS', 'candidate_files': len(names), 'candidate_bytes': sum((ROOT / n).stat().st_size for n in names), 'site_files': len(site_names), 'slides': 118, 'maps': 108, 'categories': 54, 'archive_members': len(DATA_MEMBERS), 'ethnicity': verify_ethnicity()}
 
 
-def package(destination):
+def package(destination, atlas='languages'):
     verify()
     destination = destination.resolve()
     allowed = (ROOT / 'work').resolve()
     require(allowed.is_relative_to(ROOT) and destination.is_relative_to(allowed) and destination != allowed, 'Package must be a new directory below work/')
     require(not destination.exists(), 'Destination already exists; choose a new directory')
     destination.mkdir(parents=True)
-    prefix = 'atlases/languages/site/'
+    prefix = f'atlases/{atlas}/site/'
     for name in candidates():
         if name.startswith(prefix):
             target = destination / name[len(prefix):]
@@ -142,5 +143,6 @@ if __name__ == '__main__':
     sub.add_parser('verify')
     pack = sub.add_parser('package')
     pack.add_argument('destination', type=Path)
+    pack.add_argument('--atlas', choices=['languages','ethnicity'], default='languages')
     args = parser.parse_args()
-    print(json.dumps(verify() if args.command == 'verify' else package(args.destination), indent=2))
+    print(json.dumps(verify() if args.command == 'verify' else package(args.destination,args.atlas), indent=2))

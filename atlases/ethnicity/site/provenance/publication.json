@@ -1,0 +1,68 @@
+{
+  "author": "Favio Leiva",
+  "edition": "Exploratory / Exploratoria",
+  "slides": 138,
+  "languages": [
+    "es",
+    "en"
+  ],
+  "categories": 64,
+  "mapped_units": 1892,
+  "source_districts": 1893,
+  "source": "INEI, Censos Nacionales 2025; compiled census workbook and supplied geography.",
+  "identity": "Ethnic self-identification is independent of childhood language.",
+  "geography": "Sangani aggregated into Perene only for mapping. Callao is a region with one province. 182 population differences against geographic attributes remain unresolved.",
+  "percentages": "Exploratory: all-age population denominator; official question universe and response exclusivity remain unconfirmed.",
+  "diversity": "1-HHI over ETH_01 to ETH_63; ETH_64 nonresponse excluded.",
+  "workbook_sheets": [
+    "Datos_Data",
+    "Diccionario_Dictionary"
+  ],
+  "files": [
+    {
+      "path": "_headers",
+      "bytes": 283,
+      "sha256": "a0cfa028555a7ec2063b1cae4437d35a04db51f4590a365ddfbea9d19fcbbfd0"
+    },
+    {
+      "path": "assets/district_geometry.js",
+      "bytes": 28069163,
+      "sha256": "8d8a37a33495912a6b644abdbb7cce15caafab52c1c08b05f968a2d65f392903"
+    },
+    {
+      "path": "assets/district_values.js",
+      "bytes": 396049,
+      "sha256": "28ca7a708bc44bd9988dee3a1c6b6150ce090e973875d4ae49a681432075fd4e"
+    },
+    {
+      "path": "deck-data.js",
+      "bytes": 1609121,
+      "sha256": "0c4e9e759d25e014afa8f8f2e3181d4c87350f81f4c69cddaededdc45bfbfaaa"
+    },
+    {
+      "path": "deck.css",
+      "bytes": 20549,
+      "sha256": "054d4293d93fd0ea50e197892e14ccecd766d4e2b1bf6dd6f77e10a3b0a9e4d8"
+    },
+    {
+      "path": "deck.js",
+      "bytes": 47123,
+      "sha256": "f252ae75ac42e115ec44083a9519f48b3f8545f4897ac3f7394b728574a587c2"
+    },
+    {
+      "path": "downloads/atlas_etnico_datos.xlsx",
+      "bytes": 1089493,
+      "sha256": "b98260b8064c65c3813cb98a13402ea060aed82f4e420b8666cbc4df8fe4db7c"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1681,
+      "sha256": "96641cacdbcc05c446a43e440e9016d4162ed028e91a3375f230f2e2ee9b16d1"
+    },
+    {
+      "path": "netlify.toml",
+      "bytes": 26,
+      "sha256": "07a51a150c7e3d114cfdc18a034f48ed915d854733f2a62674ea78abb19ccc70"
+    }
+  ]
+}

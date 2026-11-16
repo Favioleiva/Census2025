@@ -1,0 +1,3 @@
+[build]
+  publish = "atlases/ethnicity/site"
+# Repository-root context; no build command.
