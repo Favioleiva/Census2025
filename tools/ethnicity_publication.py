@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 ROOT=Path(__file__).resolve().parents[1]
 EXPECTED={'index.html','deck.css','deck.js','deck-data.js','assets/district_geometry.js',
           'assets/district_values.js','downloads/atlas_etnico_datos.xlsx','netlify.toml',
-          '_headers','provenance/publication.json'}
+          '_headers','provenance/publication.json','assets/country_outline.js'}
 
 def assignment(path,prefix):
     raw=path.read_text(encoding='utf-8')
@@ -26,10 +26,20 @@ def verify():
         p=site/item['path'];assert p.stat().st_size==item['bytes']
         assert hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256'],item['path']
     data=assignment(site/'deck-data.js','window.ATLAS=')
-    slides=data['slides'];assert len(slides)==138 and len({s['id'] for s in slides})==138
+    slides=data['slides'];assert len(slides)==139 and len({s['id'] for s in slides})==139
     assert len(data['categories'])==64 and len(data['geometry_codes'])==1892
     assert sum(s['kind']=='map' for s in slides)==128
     assert sum(s['kind']=='maxima' for s in slides)==2
+    assert sum(s['kind']=='presence' for s in slides)==1
+    observations=assignment(site/'assets/district_values.js','window.ATLAS_DISTRICTS=')
+    expected=[sum(observations['counts'][f'ETH_{j:02}'][i]>0 for j in range(1,64)) for i in range(1892)]
+    assert observations['positive_identity_categories']==expected
+    presence=next(s for s in slides if s['kind']=='presence')
+    assert presence['included_categories']==63 and presence['observed_max']==max(expected)
+    assert all(r['positive_identity_categories']==expected[observations['codes'].index(r['geometry_code'])] for r in presence['table'])
+    outline=assignment(site/'assets/country_outline.js','window.ATLAS_OUTLINE=')
+    assert set(outline)=={'national','inset'} and all(outline.values())
+    assert 'assets/country_outline.js' in (site/'index.html').read_text(encoding='utf-8')
     assert all(not any(k in s for k in ['images','previews','csv']) for s in slides)
     assert set(data['geometry_codes'])=={r[0] for r in assignment(site/'assets/district_geometry.js','window.ATLAS_GEOMETRY=')['national']['paths']}
     for s in slides:
@@ -41,6 +51,6 @@ def verify():
         assert [a.attrib['name'] for a in sheets]==['Datos_Data','Diccionario_Dictionary']
         sheet=ET.fromstring(z.read('xl/worksheets/sheet1.xml'))
         assert len(sheet.find('s:sheetData',ns))==1893
-    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=138,categories=64,mapped_units=1892,workbook_sheets=2)
+    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=139,categories=64,mapped_units=1892,workbook_sheets=2,presence_values_verified=True,country_outline=True)
 
 if __name__=='__main__':print(json.dumps(verify(),indent=2))

@@ -1,7 +1,7 @@
 {
   "author": "Favio Leiva",
   "edition": "Exploratory / Exploratoria",
-  "slides": 138,
+  "slides": 139,
   "languages": [
     "es",
     "en"
@@ -25,29 +25,34 @@
       "sha256": "a0cfa028555a7ec2063b1cae4437d35a04db51f4590a365ddfbea9d19fcbbfd0"
     },
     {
+      "path": "assets/country_outline.js",
+      "bytes": 2087082,
+      "sha256": "2b42f467813d0afdc199cb979a2d7e5f449b3a076770dcea33f336f5d7afee23"
+    },
+    {
       "path": "assets/district_geometry.js",
       "bytes": 28069163,
       "sha256": "8d8a37a33495912a6b644abdbb7cce15caafab52c1c08b05f968a2d65f392903"
     },
     {
       "path": "assets/district_values.js",
-      "bytes": 396049,
-      "sha256": "28ca7a708bc44bd9988dee3a1c6b6150ce090e973875d4ae49a681432075fd4e"
+      "bytes": 400332,
+      "sha256": "5f87c761bb01cc47e04bee963fed200025299b8031b49ae96a9aa08066a4a307"
     },
     {
       "path": "deck-data.js",
-      "bytes": 1609121,
-      "sha256": "0c4e9e759d25e014afa8f8f2e3181d4c87350f81f4c69cddaededdc45bfbfaaa"
+      "bytes": 1617770,
+      "sha256": "521d4c14047b0b8117fcabf7e9d9d7c585c1e186aa90e86bab46c361279601b7"
     },
     {
       "path": "deck.css",
-      "bytes": 20549,
-      "sha256": "054d4293d93fd0ea50e197892e14ccecd766d4e2b1bf6dd6f77e10a3b0a9e4d8"
+      "bytes": 21634,
+      "sha256": "cde386bbbdf03c82e141c1af3868b6bcf9a57e6c6feba11552f001f5d6bedf54"
     },
     {
       "path": "deck.js",
-      "bytes": 47123,
-      "sha256": "f252ae75ac42e115ec44083a9519f48b3f8545f4897ac3f7394b728574a587c2"
+      "bytes": 46962,
+      "sha256": "d793ed55fb8d25337177199393b3bd803093fa29e8304815159caff6b86877e5"
     },
     {
       "path": "downloads/atlas_etnico_datos.xlsx",
@@ -56,13 +61,22 @@
     },
     {
       "path": "index.html",
-      "bytes": 1681,
-      "sha256": "96641cacdbcc05c446a43e440e9016d4162ed028e91a3375f230f2e2ee9b16d1"
+      "bytes": 1730,
+      "sha256": "e53711f52f20f1dfd5df7d216e106bcf310c3d705d8e1c13b263f6e51242f930"
     },
     {
       "path": "netlify.toml",
       "bytes": 26,
       "sha256": "07a51a150c7e3d114cfdc18a034f48ed915d854733f2a62674ea78abb19ccc70"
     }
-  ]
+  ],
+  "presence": "Number of ETH_01 to ETH_63 categories with population > 0; residual categories included; ETH_64 nonresponse excluded. Counted after territorial aggregation.",
+  "presence_hover": "All present categories sorted by person count descending; scrollable hover and full selected-district list.",
+  "maxima_map_labels": false,
+  "country_outline": {
+    "color": "#000000",
+    "width_px": 0.75,
+    "method": "Exterior rings of the union of supplied district polygons; internal district boundaries excluded. Same contour clipped to Lima-Callao.",
+    "district_stroke_width": 0
+  }
 }

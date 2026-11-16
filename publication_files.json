@@ -7,6 +7,7 @@
     "README.md",
     "atlases/ethnicity/README.md",
     "atlases/ethnicity/site/_headers",
+    "atlases/ethnicity/site/assets/country_outline.js",
     "atlases/ethnicity/site/assets/district_geometry.js",
     "atlases/ethnicity/site/assets/district_values.js",
     "atlases/ethnicity/site/deck-data.js",

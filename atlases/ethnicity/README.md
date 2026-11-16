@@ -1,6 +1,6 @@
 # Atlas de autoidentificación étnica / Ethnic Self-Identification Atlas
 
-**Autor / Author: Favio Leiva.** 138 diapositivas bilingües, 64 categorías y 1.892 unidades cartográficas. Incluye máximos distritales, diversidad (1 − HHI), rankings nacionales y mapas absolutos y relativos, con detalle de Lima y Callao, hover y zoom manual.
+**Autor / Author: Favio Leiva.** 139 diapositivas bilingües, 64 categorías y 1.892 unidades cartográficas. Incluye máximos distritales, diversidad (1 − HHI), rankings nacionales y mapas absolutos y relativos, con detalle de Lima y Callao, hover y zoom manual.
 
 **Datos:** `site/downloads/atlas_etnico_datos.xlsx`, un único Excel con las hojas `Datos_Data` y `Diccionario_Dictionary`. La identidad étnica es independiente de la lengua aprendida en la niñez.
 
@@ -29,8 +29,14 @@ Fuente: INEI, Censos Nacionales 2025; libro censal compilado y cartografía sumi
 
 ## English
 
-138 bilingual slides with national/district rankings, ethnic diversity, absolute counts and exploratory percentages. Includes Lima–Callao insets, district hover, Top 20 selection, manual zoom and pan. Download one XLSX containing data and a bilingual dictionary.
+139 bilingual slides with national/district rankings, ethnic diversity, absolute counts and exploratory percentages. Includes Lima–Callao insets, district hover, Top 20 selection, manual zoom and pan. Download one XLSX containing data and a bilingual dictionary.
 
 For Netlify, connect branch `main`, set **Base directory** to `atlases/ethnicity/site`, leave **Build command** empty, and set **Publish directory** to `.`. The site requires no installation, secrets, backend or remote data requests. The commands above verify the repository and package a standalone upload folder.
 
 This is an exploratory edition: official question universe and response exclusivity remain unconfirmed; percentages use an all-age denominator. Only the mapped derivative aggregates Sangani into Perené. Territorial limitations remain documented in the deck and workbook. Public files include only the interactive runtime, final workbook, checksums and hosting configuration. Historical PNGs, original workbooks, contracts, diagnostics and intermediate data remain outside this publication.
+
+## Actualización / Update
+
+El mapa de grupos presentes cuenta las 63 categorías de identidad con población mayor que cero, incluidas las residuales y excluida la no respuesta. El hover y la ficha muestran todos los grupos presentes por población descendente. Las listas largas permiten desplazamiento. Los mapas de máximos conservan la tabla numerada, pero muestran los distritos sin números superpuestos. Al seleccionar una fila se resalta el distrito. Todos los mapas incorporan un contorno nacional negro de 0,75 px y conservan transparentes los límites distritales.
+
+The presence map counts the 63 identity categories with population greater than zero, including residual categories and excluding nonresponse. Hover and selected-district details list all present groups by descending population, with scrolling for long lists. Maxima maps retain numbered tables without numeric map labels; row selection highlights the district. A thin black national outline marks the country while district boundaries remain transparent.

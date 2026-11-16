@@ -4,7 +4,7 @@ District-level thematic atlases of Peru's 2025 Population and Housing Census, wi
 
 The **Languages Atlas** presents 54 childhood-language categories through 108 approved choropleth maps and 118 slides in Spanish and English. Its download contains final indicators for 1,893 source districts and the separate 1,892-unit cartographic derivative, national rankings, a category dictionary and an explicit district correspondence table.
 
-The **[Ethnicity Atlas](atlases/ethnicity/README.md)** presents 138 bilingual slides, 64 ethnic self-identification categories, district maxima, diversity (1 − HHI) and interactive vector maps with Lima–Callao insets. Its single Excel download includes data and a bilingual dictionary. This exploratory edition retains its documented universe, denominator and territorial limitations. The standalone website is in `atlases/ethnicity/site`; Netlify setup is documented in the atlas README.
+The **[Ethnicity Atlas](atlases/ethnicity/README.md)** presents 139 bilingual slides, 64 ethnic self-identification categories, district maxima, diversity (1 − HHI) and interactive vector maps with Lima–Callao insets. Its single Excel download includes data and a bilingual dictionary. This exploratory edition retains its documented universe, denominator and territorial limitations. The standalone website is in `atlases/ethnicity/site`; Netlify setup is documented in the atlas README.
 
 ## Explore the atlas
 

@@ -10,48 +10,31 @@ const num=n=>new Intl.NumberFormat(lang==='es'?'es-PE':'en-US').format(n),dec=n=
 const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 function svgMap(key){const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',geo[key].viewBox);svg.setAttribute('class','map-svg');svg.setAttribute('role','img');svg.dataset.scope=key;
  for(const [code,d] of geo[key].paths){const path=document.createElementNS(ns,'path');path.setAttribute('d',d);path.setAttribute('class','district');path.dataset.code=code;svg.appendChild(path)}
+ const boundary=document.createElementNS(ns,'path');boundary.setAttribute('d',window.ATLAS_OUTLINE[key]);boundary.setAttribute('class','country-outline');boundary.setAttribute('aria-hidden','true');svg.appendChild(boundary);
  return svg}
 const maps={national:svgMap('national'),inset:svgMap('inset')};
-function mountMap(target,key,s){const svg=maps[key],classes=s.classes[lang];svg.classList.toggle('cover-relative',target==='cover-map');svg.classList.toggle('maxima-svg',s.kind==='maxima');svg.querySelector('.winner-markers')?.remove();svg.setAttribute('aria-label',(key==='national'?ui[lang].national:ui[lang].inset)+' · '+s.title[lang]);for(const p of svg.querySelectorAll('.district')){const bin=s.district_bins[codeIndex.get(p.dataset.code)];p.setAttribute('fill',bin<0?'#b9b9b9':classes[bin].color);p.dataset.bin=bin;p.classList.toggle('winner',s.kind==='maxima'&&bin>0);p.classList.remove('chosen')}$(target).appendChild(svg);if(s.kind==='maxima')winnerMarkers(svg,key,s);bindDistrictHover(svg,s)}
+function mountMap(target,key,s){const svg=maps[key],classes=s.classes[lang];svg.classList.toggle('cover-relative',target==='cover-map');svg.classList.toggle('maxima-svg',s.kind==='maxima');svg.querySelector('.winner-markers')?.remove();svg.classList.remove('winner-selected');svg.setAttribute('aria-label',(key==='national'?ui[lang].national:ui[lang].inset)+' · '+s.title[lang]);for(const p of svg.querySelectorAll('.district')){const bin=s.district_bins[codeIndex.get(p.dataset.code)];p.setAttribute('fill',bin<0?'#b9b9b9':classes[bin].color);p.dataset.bin=bin;p.classList.toggle('winner',s.kind==='maxima'&&bin>0);p.classList.remove('chosen')}$(target).appendChild(svg);bindDistrictHover(svg,s)}
 function legend(s,includeMissing=true){const t=ui[lang],classes=s.classes[lang].map(c=>({...c}));if(includeMissing)classes.push({label:t.missing,color:'#b9b9b9',districts:s.missing_districts,missing:true});return `<div class="legend-list">${classes.map(c=>`<div class="legend-item"><span class="swatch ${c.missing?'missing-swatch':''}" style="background-color:${c.color}"></span><span class="class-label">${esc(c.label)}</span><span class="district-count">${num(c.districts)} ${c.districts===1?(lang==='es'?'distrito':'district'):t.districts}</span></div>`).join('')}</div>`}
 function region(r){return r.province_name+', '+r.department_name.replace('Prov. Constitucional del Callao','Callao').replace('Lima Metropolitana','Lima')}
-function value(s,r){return s.kind==='diversity'?dec(r.diversity_1_minus_hhi):s.mode==='relative'?dec(r.percentage)+' %':num(r.count)}
-function topTable(s){const t=ui[lang],metric=s.kind==='diversity'?t.index:s.mode==='relative'?t.percentage:t.persons;return `<table class="top-table"><thead><tr><th>#</th><th>${t.district}</th><th>${metric}</th></tr></thead><tbody>${s.table.map((r,i)=>`<tr data-code="${r.geometry_code}"><td>${i+1}</td><td title="${esc(r.district_name+' · '+region(r))}"><button type="button" aria-label="${t.zoom}: ${esc(r.district_name)}" class="district-link place ${r.district_name.length>39?'long-place':''}">${esc(r.district_name)}</button><small>${esc(region(r))}</small></td><td>${esc(value(s,r))}</td></tr>`).join('')}</tbody></table>`}
+function value(s,r){return s.kind==='presence'?num(r.positive_identity_categories):s.kind==='diversity'?dec(r.diversity_1_minus_hhi):s.mode==='relative'?dec(r.percentage)+' %':num(r.count)}
+function topTable(s){const t=ui[lang],metric=s.kind==='presence'?presenceWords().unit:s.kind==='diversity'?t.index:s.mode==='relative'?t.percentage:t.persons;return `<table class="top-table"><thead><tr><th>#</th><th>${t.district}</th><th>${metric}</th></tr></thead><tbody>${s.table.map((r,i)=>`<tr data-code="${r.geometry_code}"><td>${i+1}</td><td title="${esc(r.district_name+' · '+region(r))}"><button type="button" aria-label="${t.zoom}: ${esc(r.district_name)}" class="district-link place ${r.district_name.length>39?'long-place':''}">${esc(r.district_name)}</button><small>${esc(region(r))}</small></td><td>${esc(value(s,r))}</td></tr>`).join('')}</tbody></table>`}
 function mapSlide(s){const t=ui[lang],div=s.kind==='diversity',c=data.categories.find(c=>c.id===s.category_id),name=div?t.diversity:c[lang],subtitle=div?t.divsubtitle:s.mode==='relative'?t.share:t.count;return `<div class="map-head ${name.length>70?'long':''}"><p class="eyebrow">${t.identity} · Perú 2025${s.category_id==='ETH_64'?' · '+t.nonresponse:''}</p><h1>${esc(name)}</h1><div class="map-sub"><span>${subtitle}</span><div class="metric-links">${div?`<a href="#diversity-reading" data-go="diversity-reading">${lang==='es'?'Cómo interpretar el índice →':'Interpreting the index →'}</a>`:['absolute','relative'].map(m=>`<a class="${s.mode===m?'selected':''}" href="#${s.category_id}-${m}" data-go="${s.category_id}-${m}">${t[m]}</a>`).join('')}</div></div></div>
  <div class="map-grid ${s.mode==='relative'?'relative-map ':''}${s.classes[lang].length>8?'dense-legend':''}"><aside class="inset-panel"><h2>${t.inset}</h2><p class="scope">${t.scope}</p><div id="inset-map" class="inset-map"></div><div class="summary">${div?`<div><span>${t.nationalindex}</span><strong>${dec(s.national_index)}</strong></div><div class="secondary"><span>1 − HHI</span><strong>0 → 1</strong></div>`:`<div><span>${t.total}</span><strong>${num(s.national_count)}</strong></div><div class="secondary"><span>${t.insettotal}</span><strong>${num(s.inset_count)}</strong></div>`}</div><div class="legend-head"><h2>${t.legend}</h2><span>${div?t.index:s.mode==='relative'?'%':t.persons}</span></div>${legend(s)}<p class="legend-note">${t.legendnote}${div?'<br>'+t.divbasis:''}</p></aside>
  <section class="national-panel"><h2>${t.national}</h2><div id="national-map" class="national-map" tabindex="0" role="button" aria-label="${t.zoom}"></div><p class="national-caption">${t.caption}</p></section>
  <section class="ranking-panel ${s.table.length<10?'sparse':''}"><h2>Top ${s.table.length} · ${div?t.topdiv:s.mode==='relative'?t.toprelative:t.topcount}</h2>${topTable(s)}<p class="rank-note">${t.positive}: ${num(s.positive_districts)} · ${lang==='es'?'Solo valores positivos.':'Positive values only.'}</p></section></div>`}
 function leaderCell(r,mode){const d=r['top_'+mode];return `<td class="district-leader" data-code="${d.geometry_code}" title="${esc(region(d))}">${esc(d.district_name)} <span class="leader-value">(${mode==='absolute'?num(d.count):esc(dec(d.percentage))+' %'})</span></td>`}
 function rankingSlide(s){const t=ui[lang],rows=s.table;return `<article class="national-ranking"><p class="eyebrow">${t.ranks} · ${s.id.slice(-1)} / 3</p><h1>${t.ranking}</h1><p class="ranking-intro">${lang==='es'?'Puesto nacional conservado · categorías residuales al final':'Original national ranks retained · residual categories at the end'}</p><table class="national-table leaders"><thead><tr><th title="${t.ranks}">#</th><th>${t.category}</th><th>${lang==='es'?'Escala log.':'Log scale'}</th><th>${t.persons}</th><th>${t.positive}</th><th>${lang==='es'?'Mayor número · distrito':'Highest count · district'}</th><th>${lang==='es'?'Mayor porcentaje · distrito':'Highest share · district'}</th></tr></thead><tbody>${rows.map(r=>`<tr data-category="${r.category_id}" class="${['ETH_03','ETH_04','ETH_10'].includes(r.category_id)?'residual-row':''}"><td>${r.identity_rank}</td><td class="${r['label_'+lang].length>35?'long-label':''}"><a data-go="${r.category_id}-absolute" href="#${r.category_id}-absolute">${esc(r['label_'+lang])}</a></td><td class="barcell"><div class="bar-track"><div class="bar ${['ETH_03','ETH_04','ETH_10'].includes(r.category_id)?'residual':''}" style="width:${Math.log10(r.count)/8*100}%"></div></div></td><td>${num(r.count)}</td><td>${num(r.positive_districts)}</td>${leaderCell(r,'absolute')}${leaderCell(r,'relative')}</tr>`).join('')}</tbody></table><p class="ranking-note"><strong>${t.nonresnote}</strong><br>${lang==='es'?'Entre paréntesis: personas y porcentaje distrital, respectivamente. Porcentajes exploratorios; orden sin redondear.':'In parentheses: persons and district percentage, respectively. Exploratory percentages; ranked before rounding.'}<br>${lang==='es'?'Barras: escala logarítmica de 1 a 100 000 000. Residuales agrupadas al final; empates distritales por código fuente.':'Bars: logarithmic scale from 1 to 100,000,000. Residual categories grouped last; district ties use source code.'}</p></article>`}
-function maximaWords(){return lang==='es'?{absolute:'Dónde se concentra el mayor número de personas',relative:'Dónde alcanza su mayor porcentaje cada grupo',scope:'60 grupos identificados · todos los empates exactos',groups:'Grupos',districts:'Distritos',matches:'Registros',ties:'Grupos empatados',all:'Ver todos',table:'Grupo → distrito → máximo',hint:'Selecciona un distrito o su número para consultar sus grupos.',scroll:'Pulsa Personas o Porcentaje para ordenar. Desplaza para ver todos.',group:'Grupo étnico',district:'Distrito',one:'Máximo de un grupo',many:'Máximo de varios grupos',none:'Sin máximo nacional',csv:'Descargar Excel y diccionario',unitAbs:'Personas',unitRel:'Porcentaje',selected:'Distrito seleccionado',filtered:'registros visibles',excluded:'Se excluyen las tres categorías residuales y la no respuesta.'}:{absolute:'Where each group has its largest population',relative:'Where each group reaches its highest percentage',scope:'60 named groups · all exact ties included',groups:'Groups',districts:'Districts',matches:'Records',ties:'Groups with ties',all:'Show all',table:'Group → district → maximum',hint:'Select a district or its number to inspect its groups.',scroll:'Click Persons or Percentage to sort. Scroll to see all groups.',group:'Ethnic group',district:'District',one:'Maximum for one group',many:'Maximum for several groups',none:'No national maximum',csv:'Download Excel and dictionary',unitAbs:'Persons',unitRel:'Percentage',selected:'Selected district',filtered:'visible records',excluded:'The three residual categories and nonresponse are excluded.'}}
-function maximaSlide(s){const w=maximaWords(),t=ui[lang];return `<div class="map-head"><p class="eyebrow">${t.identity} · ${w.scope}</p><h1>${w[s.mode]}</h1><div class="map-sub"><span>${w.hint}</span><div class="metric-links">${['absolute','relative'].map(m=>`<a href="#maxima-${m}" data-go="maxima-${m}" class="${s.mode===m?'selected':''}">${t[m]}</a>`).join('')}</div></div></div><div class="map-grid maxima-grid"><aside class="inset-panel"><h2>${t.inset}</h2><p class="scope">${t.scope}</p><div id="inset-map" class="inset-map"></div><div class="max-summary"><div><strong>60</strong><span>${w.groups}</span></div><div><strong>${s.unique_districts}</strong><span>${w.districts}</span></div><div><strong>${s.assignments}</strong><span>${w.matches}</span></div></div><h2 class="max-legend-heading">${t.legend}</h2><div class="max-legend">${s.classes[lang].map((c,i)=>`<div><span class="swatch" style="background-color:${c.color}"></span><span>${[w.none,w.one,w.many][i]}<small>${num(c.districts)} ${t.districts}</small></span></div>`).join('')}</div><p class="legend-note">${lang==='es'?'En Lima–Callao:':'Within Lima–Callao:'} ${s.inset_winners} ${t.districts}.<br>${w.ties}: ${s.tied_groups}.<br>${w.excluded}</p><div class="max-actions"><button id="max-inset-zoom">${lang==='es'?'Ampliar Lima':'Enlarge Lima'}</button><a class="max-download" href="downloads/atlas_etnico_datos.xlsx" download>Excel</a></div></aside><section class="national-panel"><h2>${t.national}</h2><div id="national-map" class="national-map"></div><p class="national-caption">${lang==='es'?'Números de fila · cambian al ordenar la tabla.':'Row numbers · update when sorting the table.'}</p></section><section class="maxima-panel"><div class="max-panel-head"><h2>${w.table}</h2><button id="clear-winner">${w.all}</button></div><p id="winner-status" class="winner-status"></p><div id="maxima-scroll" class="maxima-scroll" tabindex="0" aria-label="${w.table}"></div><p class="max-scroll-note">${w.scroll}</p></section></div>`}
+function presenceWords(){return lang==='es'?{title:'Grupos étnicos presentes',subtitle:'Número de categorías de identidad con población mayor que cero',unit:'Grupos',range:'Rango distrital',included:'Categorías consideradas',top:'más grupos',basis:'Incluye las 3 categorías residuales.<br>Excluye «No sabe / No responde».',definition:'Se cuenta cada una de las 63 categorías de identidad con al menos una persona. Incluye las tres categorías residuales y excluye la no respuesta. Mide presencia, no el tamaño ni el equilibrio de los grupos.',tie:'Empates: código fuente ascendente.',compare:'Ver diversidad (1 − HHI) →'}:{title:'Ethnic groups present',subtitle:'Number of identity categories with a population greater than zero',unit:'Groups',range:'District range',included:'Categories considered',top:'most groups',basis:'Includes the 3 residual categories.<br>Excludes “Does not know / Does not answer”.',definition:'Counts each of the 63 identity categories with at least one person. Includes the three residual categories and excludes nonresponse. Measures presence, not group size or balance.',tie:'Ties: ascending source code.',compare:'View diversity (1 − HHI) →'}}
+function presenceSlide(s){const t=ui[lang],w=presenceWords();return `<div class="map-head"><p class="eyebrow">${t.identity} · Perú 2025</p><h1>${w.title}</h1><div class="map-sub"><span>${w.subtitle}</span><div class="metric-links"><a href="#diversity-map" data-go="diversity-map">${w.compare}</a></div></div></div>
+<div class="map-grid presence-map"><aside class="inset-panel"><h2>${t.inset}</h2><p class="scope">${t.scope}</p><div id="inset-map" class="inset-map"></div><div class="summary"><div><span>${w.range}</span><strong>${s.observed_min}–${s.observed_max}</strong></div><div class="secondary"><span>${w.included}</span><strong>${s.included_categories}</strong></div></div><div class="legend-head"><h2>${t.legend}</h2><span>${w.unit}</span></div>${legend(s)}<p class="legend-note">${w.basis}</p></aside>
+<section class="national-panel"><h2>${t.national}</h2><div id="national-map" class="national-map" tabindex="0" role="button" aria-label="${t.zoom}"></div><p class="national-caption">${t.caption}</p></section>
+<section class="ranking-panel"><h2>Top ${s.table.length} · ${w.top}</h2>${topTable(s)}<p class="rank-note">${w.tie}</p></section></div>`}
 
-/* Sorting and map labels share the same complete row order. */
+function maximaWords(){return lang==='es'?{absolute:'Dónde se concentra el mayor número de personas',relative:'Dónde alcanza su mayor porcentaje cada grupo',scope:'60 grupos identificados · todos los empates exactos',groups:'Grupos',districts:'Distritos',matches:'Registros',ties:'Grupos empatados',all:'Ver todos',table:'Grupo → distrito → máximo',hint:'Selecciona un distrito o una fila para consultar sus grupos.',scroll:'Pulsa Personas o Porcentaje para ordenar. Desplaza para ver todos.',group:'Grupo étnico',district:'Distrito',one:'Máximo de un grupo',many:'Máximo de varios grupos',none:'Sin máximo nacional',csv:'Descargar Excel y diccionario',unitAbs:'Personas',unitRel:'Porcentaje',selected:'Distrito seleccionado',filtered:'registros visibles',excluded:'Se excluyen las tres categorías residuales y la no respuesta.'}:{absolute:'Where each group has its largest population',relative:'Where each group reaches its highest percentage',scope:'60 named groups · all exact ties included',groups:'Groups',districts:'Districts',matches:'Records',ties:'Groups with ties',all:'Show all',table:'Group → district → maximum',hint:'Select a district or a table row to inspect its groups.',scroll:'Click Persons or Percentage to sort. Scroll to see all groups.',group:'Ethnic group',district:'District',one:'Maximum for one group',many:'Maximum for several groups',none:'No national maximum',csv:'Download Excel and dictionary',unitAbs:'Persons',unitRel:'Percentage',selected:'Selected district',filtered:'visible records',excluded:'The three residual categories and nonresponse are excluded.'}}
+function maximaSlide(s){const w=maximaWords(),t=ui[lang];return `<div class="map-head"><p class="eyebrow">${t.identity} · ${w.scope}</p><h1>${w[s.mode]}</h1><div class="map-sub"><span>${w.hint}</span><div class="metric-links">${['absolute','relative'].map(m=>`<a href="#maxima-${m}" data-go="maxima-${m}" class="${s.mode===m?'selected':''}">${t[m]}</a>`).join('')}</div></div></div><div class="map-grid maxima-grid"><aside class="inset-panel"><h2>${t.inset}</h2><p class="scope">${t.scope}</p><div id="inset-map" class="inset-map"></div><div class="max-summary"><div><strong>60</strong><span>${w.groups}</span></div><div><strong>${s.unique_districts}</strong><span>${w.districts}</span></div><div><strong>${s.assignments}</strong><span>${w.matches}</span></div></div><h2 class="max-legend-heading">${t.legend}</h2><div class="max-legend">${s.classes[lang].map((c,i)=>`<div><span class="swatch" style="background-color:${c.color}"></span><span>${[w.none,w.one,w.many][i]}<small>${num(c.districts)} ${t.districts}</small></span></div>`).join('')}</div><p class="legend-note">${lang==='es'?'En Lima–Callao:':'Within Lima–Callao:'} ${s.inset_winners} ${t.districts}.<br>${w.ties}: ${s.tied_groups}.<br>${w.excluded}</p><div class="max-actions"><button id="max-inset-zoom">${lang==='es'?'Ampliar Lima':'Enlarge Lima'}</button><a class="max-download" href="downloads/atlas_etnico_datos.xlsx" download>Excel</a></div></aside><section class="national-panel"><h2>${t.national}</h2><div id="national-map" class="national-map"></div><p class="national-caption">${lang==='es'?'Pasa el cursor para consultar; selecciona una fila para resaltar.':'Hover to inspect; select a table row to highlight.'}</p></section><section class="maxima-panel"><div class="max-panel-head"><h2>${w.table}</h2><button id="clear-winner">${w.all}</button></div><p id="winner-status" class="winner-status"></p><div id="maxima-scroll" class="maxima-scroll" tabindex="0" aria-label="${w.table}"></div><p class="max-scroll-note">${w.scroll}</p></section></div>`}
+
+/* Sortable tables and linked district selection; maps have no numeric labels. */
 const maximaSortState=new Map();
-const markerSegments=new WeakMap();
-function boundaryCrossesRect(path,left,top,right,bottom){
- if(!markerSegments.has(path)){
-  const segments=[];let previous=null;
-  for(const token of path.getAttribute('d').match(/[ML][^MLZ]+/g)){
-   const xy=token.slice(1).split(',').map(Number);
-   if(token[0]==='L'&&previous)segments.push([previous[0],previous[1],xy[0],xy[1]]);
-   previous=xy;
-  }
-  markerSegments.set(path,segments);
- }
- for(const [x1,y1,x2,y2] of markerSegments.get(path)){
-  if(Math.max(x1,x2)<left||Math.min(x1,x2)>right||Math.max(y1,y2)<top||Math.min(y1,y2)>bottom)continue;
-  // Liang–Barsky segment clipping against the complete label rectangle.
-  const dx=x2-x1,dy=y2-y1;let lo=0,hi=1,hit=true;
-  for(const [p,q] of [[-dx,x1-left],[dx,right-x1],[-dy,y1-top],[dy,bottom-y1]]){
-   if(p===0){if(q<0){hit=false;break}}
-   else if(p<0)lo=Math.max(lo,q/p);else hi=Math.min(hi,q/p);
-   if(lo>hi){hit=false;break}
-  }
-  if(hit)return true;
- }
- return false;
-}
 function maximaSort(s){if(!maximaSortState.has(s.id))maximaSortState.set(s.id,{key:'count',direction:-1});return maximaSortState.get(s.id)}
 function maximaRows(s){
  const order=maximaSort(s);
@@ -65,73 +48,18 @@ function maximaTable(s,rows=maximaRows(s)){
  const header=(key,label)=>`<th aria-sort="${sort.key===key?(sort.direction<0?'descending':'ascending'):'none'}"><button data-sort="${key}" title="${lang==='es'?'Ordenar por':'Sort by'} ${label}">${label} <span aria-hidden="true">${sort.key===key?(sort.direction<0?'↓':'↑'):'↕'}</span></button></th>`;
  return `<table class="maxima-table"><thead><tr><th>#</th><th>${w.group}</th><th>${w.district}</th>${header('count',w.unitAbs)}${header('percentage',w.unitRel)}</tr></thead><tbody>${rows.map(r=>`<tr data-winner="${r.geometry_code}" data-category="${r.category_id}" data-number="${r.row_number}" tabindex="0"><td>${r.row_number}</td><td>${esc(r['label_'+lang])}${r.tied_districts>1?`<small>${lang==='es'?'Empate:':'Tie:'} ${r.tied_districts}</small>`:''}</td><td>${esc(r.district_name)}<small>${esc(region(r))}</small></td><td>${num(r.count)}</td><td>${esc(dec(r.percentage))} %</td></tr>`).join('')}</tbody></table>`;
 }
-function winnerMarkers(svg,key,s){
- svg.querySelector('.winner-markers')?.remove();
- const ns='http://www.w3.org/2000/svg',make=(tag,attrs={})=>{const e=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e};
- const layer=make('g',{class:'winner-markers'}),lines=make('g',{class:'marker-lines'}),labels=make('g');layer.append(lines,labels);
- const width=+geo[key].viewBox.split(' ')[2],font=key==='inset'?46:18,padding=key==='inset'?12:6,rows=maximaRows(s);
- const pts=s.winner_districts.filter(d=>d.points[key]).map(d=>{
-  const records=rows.filter(r=>r.geometry_code===d.geometry_code),numbers=records.map(r=>r.row_number),chunks=[];
-  for(let i=0;i<numbers.length;i+=3)chunks.push(numbers.slice(i,i+3).join(', '));
-  const path=svg.querySelector(`.district[data-code="${d.geometry_code}"]`),box=path.getBBox();
-  return {d,records,numbers,chunks,path,ax:d.points[key][0],ay:d.points[key][1],w:Math.max(font*1.5,...chunks.map(t=>t.length*font*.57))+padding*2,h:chunks.length*font*1.12+padding*2,box};
- });
- const gap=key==='inset'?13:7;
- for(const a of pts)a.external=key==='inset'||a.box.width<45||a.box.height<35||pts.some(b=>a!==b&&Math.hypot(a.ax-b.ax,a.ay-b.ay)<72);
- const placed=[],point=svg.createSVGPoint();
- const inside=(path,x,y)=>{point.x=x;point.y=y;return path.isPointInFill(point)};
- const overlaps=(a,b)=>Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.y-b.y)<(a.h+b.h)/2+gap;
- // Place wider labels first. Search outside the district for crowded/small polygons.
- for(const a of [...pts].sort((a,b)=>b.w*b.h-a.w*a.h||a.ay-b.ay)){
-  let best=null;
-  const valid=(x,y)=>{
-   const candidate={...a,x,y};
-   if(x-a.w/2<4||x+a.w/2>width-4||y-a.h/2<4||y+a.h/2>996||placed.some(b=>overlaps(candidate,b)))return false;
-   if(a.external){
-    if(inside(a.path,x,y)||boundaryCrossesRect(a.path,x-a.w/2-2,y-a.h/2-2,x+a.w/2+2,y+a.h/2+2))return false;
-   }
-   return true;
-  };
-  // Cost favours short leaders; a westward preference moves coastal clusters into open space.
-  for(let radius=0;radius<950;radius+=key==='inset'?12:8){
-   for(let n=0;n<48;n++){
-    const angle=n*Math.PI/24,x=a.ax+Math.cos(angle)*radius,y=a.ay+Math.sin(angle)*radius;
-    if(!valid(x,y))continue;
-    const score=radius+(a.external&&x>a.ax?8:0)+Math.abs(y-a.ay)*.15;
-    if(!best||score<best.score)best={x,y,score};
-   }
-   if(best&&radius>best.score+25)break;
-  }
-  if(!best)throw Error('No collision-free marker position: '+a.d.geometry_code);
-  Object.assign(a,best);placed.push(a);
- }
- for(const a of pts){
-  const marker=make('g',{class:'max-marker',tabindex:0,role:'button','data-winner':a.d.geometry_code,'data-numbers':a.numbers.join(','),'data-external':a.external,'data-anchor-x':a.ax,'data-anchor-y':a.ay});
-  const label=a.numbers.join(', ')+'. '+a.d.district_name+': '+a.records.map(r=>r['label_'+lang]+' ('+num(r.count)+'; '+dec(r.percentage)+' %)').join('; ');
-  marker.setAttribute('aria-label',label);const title=make('title');title.textContent=label;marker.append(title);
-  const dx=a.ax-a.x,dy=a.ay-a.y,t=1/Math.max(Math.abs(dx)/(a.w/2),Math.abs(dy)/(a.h/2),1);
-  if(Math.hypot(dx,dy)>2){
-   lines.append(make('line',{x1:a.ax,y1:a.ay,x2:a.x+dx*t,y2:a.y+dy*t,class:'marker-line'}));
-   lines.append(make('circle',{cx:a.ax,cy:a.ay,r:key==='inset'?3.5:2.2,class:'marker-anchor'}));
-  }
-  marker.append(make('rect',{x:a.x-a.w/2,y:a.y-a.h/2,width:a.w,height:a.h,rx:font*.35}));
-  a.chunks.forEach((chunk,i)=>{const text=make('text',{x:a.x,y:a.y+(i-(a.chunks.length-1)/2)*font*1.12,'font-size':font});text.textContent=chunk;marker.append(text)});
-  labels.append(marker);
- }
- svg.append(layer);
-}
 function selectWinner(code){
  const s=data.slides[current];if(s.kind!=='maxima')return;selectedWinner=code;
  const all=maximaRows(s),rows=code?all.filter(r=>r.geometry_code===code):all,w=maximaWords();
  $('maxima-scroll').innerHTML=maximaTable(s,rows);$('maxima-scroll').scrollTop=0;
  $('winner-status').textContent=code?`${w.selected}: ${rows[0].district_name} · ${rows.length} ${w.filtered}`:`${s.named_groups} ${w.groups.toLowerCase()} · ${s.assignments} ${w.matches.toLowerCase()} · ${s.unique_districts} ${w.districts.toLowerCase()}`;
  $('clear-winner').disabled=!code;
- for(const svg of Object.values(maps))for(const e of svg.querySelectorAll('.district,.max-marker'))e.classList.toggle('chosen',!!code&&(e.dataset.code===code||e.dataset.winner===code));
+ for(const svg of Object.values(maps))svg.classList.toggle('winner-selected',!!code);
+ for(const svg of Object.values(maps))for(const e of svg.querySelectorAll('.district'))e.classList.toggle('chosen',!!code&&(e.dataset.code===code||e.dataset.winner===code));
 }
 function sortMaxima(key){
  const focusRoot=$('detail').open?'detail-body':'maxima-scroll';
  const s=data.slides[current],sort=maximaSort(s);sort.direction=sort.key===key?-sort.direction:-1;sort.key=key;
- for(const scope of ['national','inset'])winnerMarkers(maps[scope],scope,s);
  selectWinner(selectedWinner);
  if($('detail').open)$('detail-body').innerHTML=maximaDetails(s);
  $(focusRoot).querySelector(`[data-sort="${key}"]`)?.focus({preventScroll:true});
@@ -153,7 +81,14 @@ const observations=window.ATLAS_DISTRICTS;
 const observationIndex=new Map(observations.codes.map((code,i)=>[code,i]));
 const exploreState={svg:null,scope:'national',slide:null,home:null,view:null,rendered:null,selected:null,frame:0,settle:0,captureTimer:0,captureVersion:0,rasterReady:false,preview:false,drag:null,moved:false};
 const hoverTip=document.createElement('div');hoverTip.id='district-tooltip';hoverTip.setAttribute('role','tooltip');hoverTip.hidden=true;document.body.append(hoverTip);
-let hoverFrame=0,hoverCode=null,hoverSlide=null,hoverEvent=null;
+let hoverFrame=0,hoverCode=null,hoverSlide=null,hoverEvent=null,hoverHideTimer=0;
+hoverTip.onpointerenter=()=>clearTimeout(hoverHideTimer);
+hoverTip.onpointerleave=()=>hideDistrictTip();
+function scheduleDistrictTipHide(){clearTimeout(hoverHideTimer);hoverHideTimer=setTimeout(hideDistrictTip,180)}
+function presenceGroupList(i){
+ const rows=data.categories.filter(c=>c.id!=='ETH_64').map(c=>({category:c,count:observations.counts[c.id][i]})).filter(r=>r.count>0).sort((a,b)=>b.count-a.count||a.category.id.localeCompare(b.category.id));
+ return `<p class="presence-list-title">${lang==='es'?'De mayor a menor · personas':'Highest to lowest · persons'}</p><ol class="presence-group-list" aria-label="${lang==='es'?'Grupos presentes por población':'Present groups by population'}">${rows.map(r=>`<li data-category="${r.category.id}" data-count="${r.count}"><span>${esc(r.category[lang])}</span><b>${num(r.count)}</b></li>`).join('')}</ol>`;
+}
 function explorationWords(){return lang==='es'?{title:'Explorar mapa',reset:'Restablecer',in:'Acercar',out:'Alejar',focus:'Centrar distrito',hint:'Rueda: zoom · arrastrar: desplazar · clic: seleccionar',empty:'Pasa el cursor sobre un distrito para ver sus datos. Haz clic para mantener su ficha.',selected:'Distrito seleccionado',none:'Sin máximo nacional',group:'Grupo',count:'Personas',share:'Porcentaje distrital',index:'Diversidad · 1 − HHI',pending:'Porcentaje exploratorio',more:'Más grupos en la ficha',keyboard:'También puedes usar +, − y las flechas; Inicio restablece la vista.'}:{title:'Explore map',reset:'Reset',in:'Zoom in',out:'Zoom out',focus:'Center district',hint:'Wheel: zoom · drag: pan · click: select',empty:'Hover over a district to see its data. Click to keep its details.',selected:'Selected district',none:'No national maximum',group:'Group',count:'Persons',share:'District percentage',index:'Diversity · 1 − HHI',pending:'Exploratory percentage',more:'More groups in the details panel',keyboard:'You can also use +, − and arrow keys; Home resets the view.'}}
 function effectiveMapSlide(s=data.slides[current]){return s.kind==='cover'?data.slides.find(s=>s.id==='ETH_01-relative'):s}
 function districtCard(code,s=effectiveMapSlide(),compact=false){
@@ -164,6 +99,8 @@ function districtCard(code,s=effectiveMapSlide(),compact=false){
   const records=maximaRows(s).filter(r=>r.geometry_code===code),shown=compact?records.slice(0,3):records;
   body=records.length?shown.map(r=>`<div class="district-value"><b>${r.row_number}. ${esc(r['label_'+lang])}</b><span>${num(r.count)} ${w.count.toLowerCase()} · ${esc(dec(r.percentage))} %</span></div>`).join(''):`<p>${w.none}</p>`;
   if(shown.length<records.length)body+=`<small>+${records.length-shown.length} · ${w.more}</small>`;
+ }else if(s.kind==='presence'){
+  const v=observations.positive_identity_categories[i];body=`<div class="district-value"><span>${presenceWords().title}</span><b>${v===null?ui[lang].missing:num(v)}</b></div>${v===null?'':presenceGroupList(i)}<small>${presenceWords().basis}</small>`;
  }else if(s.kind==='diversity'){
   const v=observations.diversity[i];body=`<div class="district-value"><span>${w.index}</span><b>${v===null?ui[lang].missing:dec(v)}</b></div>`;
  }else{
@@ -174,7 +111,7 @@ function districtCard(code,s=effectiveMapSlide(),compact=false){
  }
  return nameHtml+body;
 }
-function hideDistrictTip(){if(hoverFrame)cancelAnimationFrame(hoverFrame);hoverFrame=0;hoverCode=null;hoverSlide=null;hoverTip.hidden=true}
+function hideDistrictTip(){clearTimeout(hoverHideTimer);if(hoverFrame)cancelAnimationFrame(hoverFrame);hoverFrame=0;hoverCode=null;hoverSlide=null;hoverTip.hidden=true}
 function positionDistrictTip(e){
  const bounds=hoverTip.getBoundingClientRect(),gap=14;
  const x=e.clientX+bounds.width+gap<innerWidth?e.clientX+gap:e.clientX-bounds.width-gap;
@@ -183,14 +120,16 @@ function positionDistrictTip(e){
 }
 function bindDistrictHover(svg,s){
  svg.onpointermove=e=>{
+  clearTimeout(hoverHideTimer);
   if(exploreState.drag?.active){hideDistrictTip();return}
   const target=e.target.closest('.district,.max-marker'),code=target?.dataset.code||target?.dataset.winner;
-  if(!code){hideDistrictTip();return}
+  if(!code){if(hoverSlide?.kind==='presence')scheduleDistrictTipHide();else hideDistrictTip();return}
   hoverEvent=e;
-  if(hoverCode!==code||hoverSlide!==s){hoverCode=code;hoverSlide=s;hoverTip.innerHTML=districtCard(code,s,true);hoverTip.dataset.code=code;hoverTip.hidden=false}
-  if(!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;if(!hoverTip.hidden)positionDistrictTip(hoverEvent)});
+  const changed=hoverCode!==code||hoverSlide!==s;
+  if(changed){hoverCode=code;hoverSlide=s;hoverTip.classList.toggle('presence-hover',s.kind==='presence');hoverTip.innerHTML=districtCard(code,s,true);hoverTip.dataset.code=code;hoverTip.hidden=false}
+  if((changed||s.kind!=='presence')&&!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;if(!hoverTip.hidden)positionDistrictTip(hoverEvent)});
  };
- svg.onpointerleave=hideDistrictTip;
+ svg.onpointerleave=()=>{if(hoverSlide?.kind==='presence')scheduleDistrictTipHide();else hideDistrictTip()};
 }
 function explorerMarkup(){
  const w=explorationWords();
@@ -221,7 +160,7 @@ function captureExploreRaster(){
   const svg=exploreState.svg;if(!svg||version!==exploreState.captureVersion)return;
   const clone=svg.cloneNode(true),ns='http://www.w3.org/2000/svg',style=document.createElementNS(ns,'style');
   // Snapshot only for gesture feedback. The live geometry and values remain exact.
-  style.textContent='.district{stroke:transparent;stroke-width:0;fill-rule:evenodd;shape-rendering:crispEdges}.district-selected .district:not(.explorer-selected){opacity:.28}.max-marker rect,.max-marker circle{fill:#fff;stroke:#632753;stroke-width:1}.max-marker text{fill:#4b1d70;text-anchor:middle;dominant-baseline:central;font-family:Arial;font-weight:bold}.max-marker.chosen rect{fill:#4b1d70}.max-marker.chosen text{fill:white}.marker-line{stroke:#6d5362;stroke-width:.7}.marker-anchor{fill:#632753}';
+  style.textContent='.country-outline{fill:none;stroke:#000;stroke-width:.75;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;shape-rendering:geometricPrecision}.district{stroke:transparent;stroke-width:0;fill-rule:evenodd;shape-rendering:crispEdges}.district-selected .district:not(.explorer-selected){opacity:.28}.max-marker rect,.max-marker circle{fill:#fff;stroke:#632753;stroke-width:1}.max-marker text{fill:#4b1d70;text-anchor:middle;dominant-baseline:central;font-family:Arial;font-weight:bold}.max-marker.chosen rect{fill:#4b1d70}.max-marker.chosen text{fill:white}.marker-line{stroke:#6d5362;stroke-width:.7}.marker-anchor{fill:#632753}';
   clone.prepend(style);clone.style.visibility='';clone.classList.remove('map-svg');
   const viewport=$('vector-viewer'),dpr=Math.min(2,devicePixelRatio||1),w=Math.ceil(viewport.clientWidth*dpr),h=Math.ceil(viewport.clientHeight*dpr);
   clone.setAttribute('xmlns',ns);clone.setAttribute('width',w);clone.setAttribute('height',h);
@@ -325,10 +264,10 @@ function cover(){const t=ui[lang],s=data.slides.find(s=>s.id==='ETH_01-relative'
 function resize(){const scale=Math.min(innerWidth/1920,innerHeight/1080);$('stage').style.transform=`scale(${scale})`;$('stage').style.left=`${(innerWidth-1920*scale)/2}px`;$('stage').style.top=`${(innerHeight-1080*scale)/2}px`}
 function render(){hideDistrictTip();if($('figure-dialog').open)$('figure-dialog').close();const s=data.slides[current],t=ui[lang];document.documentElement.lang=lang;document.title=`${current+1} / ${data.slides.length} · ${s.title[lang]} · Favio Leiva`;$('counter').textContent=`${current+1} / ${data.slides.length}`;$('language').textContent=lang==='es'?'EN':'ES';$('language').setAttribute('aria-label',lang==='es'?'Switch to English':'Cambiar a español');$('previous').disabled=current===0;$('next').disabled=current===data.slides.length-1;
  for(const [id,k] of Object.entries({contents:'contents',zoom:'zoom',details:'details',tocTitle:'contents',closeToc:'close',closeFigure:'close',closeDetail:'close',original:'original',native:'native'}))$(id).textContent=t[k];$('search').placeholder=t.search;$('search').setAttribute('aria-label',t.search);$('empty').textContent=t.empty;
- $('zoom').hidden=!['map','diversity','cover','maxima'].includes(s.kind);$('details').hidden=!s.table;
- $('footnote').textContent=t.source+((s.mode==='relative'||s.kind==='diversity'||s.kind==='cover'||s.kind==='maxima')?' '+t.pending:'');
- $('slide-content').innerHTML=s.kind==='maxima'?maximaSlide(s):['map','diversity'].includes(s.kind)?mapSlide(s):s.kind==='ranking'?rankingSlide(s):s.kind==='cover'?cover():`<article class="text-slide">${s.content[lang]}</article>`;
- if(['map','diversity','maxima'].includes(s.kind)){mountMap('national-map','national',s);mountMap('inset-map','inset',s);$('national-map').onclick=e=>enlarge('national',e.target.closest('.district')?.dataset.code);$('inset-map').onclick=e=>enlarge('inset',e.target.closest('.district')?.dataset.code);$('inset-map').tabIndex=0;$('inset-map').setAttribute('role','button');$('inset-map').setAttribute('aria-label',t.zoom+' '+t.inset);$('inset-map').onkeydown=e=>{if(e.key==='Enter')enlarge('inset')};$('national-map').onkeydown=e=>{if(e.key==='Enter')enlarge()};if(s.kind==='maxima')bindMaxima()}else if(s.kind==='cover')mountMap('cover-map','national',data.slides.find(s=>s.id==='ETH_01-relative'));
+ $('zoom').hidden=!['map','diversity','presence','cover','maxima'].includes(s.kind);$('details').hidden=!s.table;
+ $('footnote').textContent=t.source+((s.mode==='relative'||s.kind==='diversity'||s.kind==='presence'||s.kind==='cover'||s.kind==='maxima')?' '+t.pending:'');
+ $('slide-content').innerHTML=s.kind==='presence'?presenceSlide(s):s.kind==='maxima'?maximaSlide(s):['map','diversity'].includes(s.kind)?mapSlide(s):s.kind==='ranking'?rankingSlide(s):s.kind==='cover'?cover():`<article class="text-slide">${s.content[lang]}</article>`;
+ if(['map','diversity','presence','maxima'].includes(s.kind)){mountMap('national-map','national',s);mountMap('inset-map','inset',s);$('national-map').onclick=e=>enlarge('national',e.target.closest('.district')?.dataset.code);$('inset-map').onclick=e=>enlarge('inset',e.target.closest('.district')?.dataset.code);$('inset-map').tabIndex=0;$('inset-map').setAttribute('role','button');$('inset-map').setAttribute('aria-label',t.zoom+' '+t.inset);$('inset-map').onkeydown=e=>{if(e.key==='Enter')enlarge('inset')};$('national-map').onkeydown=e=>{if(e.key==='Enter')enlarge()};if(s.kind==='maxima')bindMaxima()}else if(s.kind==='cover')mountMap('cover-map','national',data.slides.find(s=>s.id==='ETH_01-relative'));
  if($('toc').open)filter();resize();}
 function go(i,hash=true){current=Math.max(0,Math.min(data.slides.length-1,i));selectedWinner=null;render();if(hash)history.replaceState(null,'','#'+data.slides[current].id)}
 function goId(id){const i=data.slides.findIndex(s=>s.id===id);if(i>=0)go(i)}
@@ -336,7 +275,7 @@ function fromHash(){const i=data.slides.findIndex(s=>s.id===location.hash.slice(
 function filter(){const q=norm($('search').value),matches=data.slides.map((s,i)=>({s,i})).filter(({s})=>norm(s.title.es+' '+s.title.en+' '+s.id+' '+(s.source_label||'')).includes(q));$('toc-list').innerHTML=matches.map(({s,i})=>`<button data-go="${s.id}"><span class="tocnum">${i+1}</span><span>${esc(s.title[lang])}</span></button>`).join('');$('empty').hidden=matches.length>0}
 function contents(){$('search').value='';filter();$('toc').showModal();$('search').focus()}
 function enlarge(scope='national',code=null){openExplorer(scope,code)}
-function details(){const s=data.slides[current],t=ui[lang];if(!s.table)return;$('detail-title').textContent=s.title[lang];$('detail-body').innerHTML=s.kind==='maxima'?maximaDetails(s):s.kind==='ranking'?`<table><thead><tr><th>#</th><th>${t.category}</th><th>${t.persons}</th><th>${t.positive}</th><th>${lang==='es'?'Mayor n\u00famero':'Highest count'}</th><th>${lang==='es'?'Mayor porcentaje':'Highest share'}</th></tr></thead><tbody>${s.table.map(r=>`<tr><td>${r.identity_rank}</td><td>${esc(r['label_'+lang])}</td><td>${num(r.count)}</td><td>${num(r.positive_districts)}</td>${leaderCell(r,'absolute')}${leaderCell(r,'relative')}</tr>`).join('')}</tbody></table>`:`<p class="muted">${t.tie}</p>${topTable(s)}`;if(s.kind==='ranking')$('detail-body').insertAdjacentHTML('beforeend',`<p class="ranking-download"><a href="downloads/atlas_etnico_datos.xlsx" download>${lang==='es'?'Descargar Excel y diccionario':'Download Excel and dictionary'}</a></p>`);$('detail').showModal()}
+function details(){const s=data.slides[current],t=ui[lang];if(!s.table)return;$('detail-title').textContent=s.title[lang];$('detail-body').innerHTML=s.kind==='maxima'?maximaDetails(s):s.kind==='ranking'?`<table><thead><tr><th>#</th><th>${t.category}</th><th>${t.persons}</th><th>${t.positive}</th><th>${lang==='es'?'Mayor n\u00famero':'Highest count'}</th><th>${lang==='es'?'Mayor porcentaje':'Highest share'}</th></tr></thead><tbody>${s.table.map(r=>`<tr><td>${r.identity_rank}</td><td>${esc(r['label_'+lang])}</td><td>${num(r.count)}</td><td>${num(r.positive_districts)}</td>${leaderCell(r,'absolute')}${leaderCell(r,'relative')}</tr>`).join('')}</tbody></table>`:`<p class="muted">${s.kind==='presence'?presenceWords().definition+' '+presenceWords().tie:t.tie}</p>${topTable(s)}`;if(s.kind==='ranking')$('detail-body').insertAdjacentHTML('beforeend',`<p class="ranking-download"><a href="downloads/atlas_etnico_datos.xlsx" download>${lang==='es'?'Descargar Excel y diccionario':'Download Excel and dictionary'}</a></p>`);$('detail').showModal()}
 async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){$('fullscreen').title=lang==='es'?'Usa pantalla completa del navegador.':'Use browser full screen.'}}
 $('language').onclick=()=>{lang=lang==='es'?'en':'es';render()};$('previous').onclick=()=>go(current-1);$('next').onclick=()=>go(current+1);$('contents').onclick=contents;$('search').oninput=filter;$('zoom').onclick=enlarge;$('details').onclick=details;$('fullscreen').onclick=fullscreen;
 document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(a){e.preventDefault();if($('toc').open)$('toc').close();goId(a.dataset.go)}});
