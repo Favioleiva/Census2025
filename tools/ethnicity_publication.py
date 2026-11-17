@@ -27,12 +27,27 @@ def verify():
         p=site/item['path'];assert p.stat().st_size==item['bytes']
         assert hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256'],item['path']
     data=assignment(site/'deck-data.js','window.ATLAS=')
-    slides=data['slides'];assert len(slides)==141 and len({s['id'] for s in slides})==141
+    slides=data['slides'];assert len(slides)==142 and len({s['id'] for s in slides})==142
     assert len(data['categories'])==64 and len(data['geometry_codes'])==1892
     assert sum(s['kind']=='map' for s in slides)==128
     assert sum(s['kind']=='maxima' for s in slides)==2
     assert sum(s['kind']=='presence' for s in slides)==2
     assert sum(s['kind']=='diversity' for s in slides)==2
+    assert sum(s['kind']=='correlation' for s in slides)==1
+    correlation=next(s for s in slides if s['kind']=='correlation')
+    assert slides.index(correlation)==8
+    assert len(correlation['groups'])==60 and correlation['districts']==1892
+    assert correlation['default_metric']=='phi' and correlation['default_group_count']==20
+    assert not {'ETH_03','ETH_04','ETH_10','ETH_64'} & {c['id'] for c in correlation['groups']}
+    for metric in ['phi','spearman','joint']:
+        matrix=correlation[metric]
+        assert len(matrix)==60 and all(len(row)==60 for row in matrix)
+        for i in range(60):
+            for j in range(60):
+                assert abs(matrix[i][j]-matrix[j][i])<1e-12
+                if metric=='joint':assert isinstance(matrix[i][j],int) and 0<=matrix[i][j]<=1892
+                else:assert -1-1e-12<=matrix[i][j]<=1+1e-12
+            if metric!='joint':assert abs(matrix[i][i]-1)<1e-12
     observations=assignment(site/'assets/district_values.js','window.ATLAS_DISTRICTS=')
     expected=[sum(observations['counts'][f'ETH_{j:02}'][i]>0 for j in range(1,64)) for i in range(1892)]
     assert observations['positive_identity_categories']==expected
@@ -66,6 +81,6 @@ def verify():
         assert [a.attrib['name'] for a in sheets]==['Datos_Data','Diccionario_Dictionary']
         sheet=ET.fromstring(z.read('xl/worksheets/sheet1.xml'))
         assert len(sheet.find('s:sheetData',ns))==1893
-    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=141,categories=64,mapped_units=1892,workbook_sheets=2,presence_values_verified=True,bottom_rankings_verified=True,country_outline=True)
+    return dict(status='PASS',files=len(EXPECTED),bytes=sum((site/n).stat().st_size for n in EXPECTED),slides=142,categories=64,mapped_units=1892,workbook_sheets=2,presence_values_verified=True,bottom_rankings_verified=True,country_outline=True)
 
 if __name__=='__main__':print(json.dumps(verify(),indent=2))

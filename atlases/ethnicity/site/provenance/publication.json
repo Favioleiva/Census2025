@@ -1,7 +1,7 @@
 {
   "author": "Favio Leiva",
   "edition": "Exploratory / Exploratoria",
-  "slides": 141,
+  "slides": 142,
   "languages": [
     "es",
     "en"
@@ -41,18 +41,18 @@
     },
     {
       "path": "deck-data.js",
-      "bytes": 1643542,
-      "sha256": "9a6ddbadd6de1dac2984e8d60f5128566179ed99920a6cb4922217acadca7707"
+      "bytes": 1800572,
+      "sha256": "0c44bbfa1abcc0cef313aa993cb8464feff0ac827a9c644633470922c74e1fac"
     },
     {
       "path": "deck.css",
-      "bytes": 21634,
-      "sha256": "cde386bbbdf03c82e141c1af3868b6bcf9a57e6c6feba11552f001f5d6bedf54"
+      "bytes": 25227,
+      "sha256": "aad7a919e12b502263fdba81289bfb662abcb4c603258d5effab060a2c1f9718"
     },
     {
       "path": "deck.js",
-      "bytes": 47581,
-      "sha256": "804ae6c4e7166fa10d8f3a3e423ffda992514701d8fe24e0a576c30934277126"
+      "bytes": 55544,
+      "sha256": "6b89dca67997cc9cc53f119ef99b401ff2cc37f1c7b61a9513e5d5020ca41675"
     },
     {
       "path": "downloads/atlas_etnico_datos.xlsx",
@@ -91,5 +91,36 @@
     "missing_values_excluded": true,
     "tie_break": "source district code ascending",
     "map_classes_unchanged": true
-  }
+  },
+  "correlation": {
+    "unit": "mapped district; each district has equal weight",
+    "districts": 1892,
+    "groups": 60,
+    "excluded_categories": [
+      "ETH_03",
+      "ETH_04",
+      "ETH_10",
+      "ETH_64"
+    ],
+    "phi": "Pearson correlation of binary presence (count > 0), also called phi; uses all districts including joint absences.",
+    "spearman": "Pearson correlation of average ranks of district percentages; zero shares and tied ranks retained. Percentages use the existing exploratory all-age denominator.",
+    "joint": "Number of districts with count > 0 for both groups.",
+    "ordering": "National population descending; same order on both axes.",
+    "missing": "No missing counts; all denominators positive. Input completeness is asserted, not imputed.",
+    "interpretation": "Ecological territorial association, not individual joint identity or causation. Shared zeros, sparse distributions and the common percentage denominator affect interpretation.",
+    "no_significance_tests": true,
+    "slide": "ethnic-correlation",
+    "default_metric": "phi",
+    "default_group_count": 20,
+    "palette": {
+      "negative": "#2166ac",
+      "zero": "#f7f7f7",
+      "positive": "#b2182b"
+    },
+    "range": [
+      -1,
+      1
+    ]
+  },
+  "maxima_exploration": "Click either national or Lima-Callao map to open the shared zoom/pan explorer; table rows retain selection and highlighting."
 }
